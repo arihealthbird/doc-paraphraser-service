@@ -1,7 +1,7 @@
-import pdf from 'pdf-parse';
 import mammoth from 'mammoth';
 import fs from 'fs/promises';
 import path from 'path';
+const pdf = require('pdf-parse');
 
 export interface ExtractedDocument {
   text: string;

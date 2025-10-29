@@ -1,5 +1,5 @@
 import { Queue } from 'bullmq';
-import { v4 as uuidv4 } from 'uuid';
+import { randomUUID } from 'crypto';
 import { ParaphrasingConfig } from '../types';
 
 export class JobQueueService {
@@ -17,7 +17,7 @@ export class JobQueueService {
     fileType: string,
     config: ParaphrasingConfig
   ): Promise<string> {
-    const jobId = uuidv4();
+    const jobId = randomUUID();
 
     await this.queue.add(
       'paraphrase-document',

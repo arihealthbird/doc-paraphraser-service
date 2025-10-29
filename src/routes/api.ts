@@ -1,6 +1,6 @@
 import express, { Request, Response } from 'express';
 import multer from 'multer';
-import { v4 as uuidv4 } from 'uuid';
+import { randomUUID } from 'crypto';
 import path from 'path';
 import fs from 'fs/promises';
 import { JobQueueService } from '../services/jobQueue';
@@ -17,7 +17,7 @@ const storage = multer.diskStorage({
     cb(null, uploadDir);
   },
   filename: (req, file, cb) => {
-    const uniqueId = uuidv4();
+    const uniqueId = randomUUID();
     const ext = path.extname(file.originalname);
     cb(null, `${uniqueId}${ext}`);
   },
