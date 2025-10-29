@@ -1,0 +1,389 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document Paraphraser Service</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 16px;
+            padding: 40px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+        }
+
+        h1 {
+            color: #333;
+            margin-bottom: 10px;
+            font-size: 2em;
+        }
+
+        .subtitle {
+            color: #666;
+            margin-bottom: 30px;
+        }
+
+        .upload-area {
+            border: 2px dashed #667eea;
+            border-radius: 12px;
+            padding: 40px;
+            text-align: center;
+            background: #f8f9ff;
+            margin-bottom: 30px;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .upload-area:hover {
+            border-color: #764ba2;
+            background: #f0f1ff;
+        }
+
+        .upload-area.dragging {
+            border-color: #764ba2;
+            background: #e8e9ff;
+        }
+
+        .file-input {
+            display: none;
+        }
+
+        .config-section {
+            margin-bottom: 30px;
+        }
+
+        .config-group {
+            margin-bottom: 20px;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 8px;
+            color: #333;
+            font-weight: 500;
+        }
+
+        select, button {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            font-size: 16px;
+            font-family: inherit;
+        }
+
+        select:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+
+        button {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            cursor: pointer;
+            font-weight: 600;
+            transition: transform 0.2s;
+            margin-top: 10px;
+        }
+
+        button:hover {
+            transform: translateY(-2px);
+        }
+
+        button:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .progress-section {
+            display: none;
+            margin-top: 30px;
+            padding: 20px;
+            background: #f8f9ff;
+            border-radius: 12px;
+        }
+
+        .progress-bar {
+            width: 100%;
+            height: 30px;
+            background: #e0e0e0;
+            border-radius: 15px;
+            overflow: hidden;
+            margin-bottom: 10px;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #667eea 0%, #764ba2 100%);
+            width: 0%;
+            transition: width 0.3s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: 600;
+        }
+
+        .status-text {
+            color: #666;
+            text-align: center;
+        }
+
+        .download-section {
+            display: none;
+            margin-top: 20px;
+            text-align: center;
+        }
+
+        .error {
+            color: #e74c3c;
+            margin-top: 10px;
+            padding: 10px;
+            background: #ffeaea;
+            border-radius: 8px;
+        }
+
+        .file-info {
+            margin-top: 10px;
+            padding: 10px;
+            background: #e8f5e9;
+            border-radius: 8px;
+            color: #2e7d32;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>📝 Document Paraphraser</h1>
+        <p class="subtitle">Upload documents up to 700+ pages and paraphrase them with AI</p>
+
+        <div class="upload-area" id="uploadArea">
+            <input type="file" id="fileInput" class="file-input" accept=".pdf,.docx,.txt">
+            <p>🗂️ Drop your document here or click to browse</p>
+            <p style="font-size: 0.9em; color: #999; margin-top: 10px;">Supports PDF, DOCX, TXT (up to 100MB)</p>
+        </div>
+
+        <div id="fileInfo" class="file-info" style="display: none;"></div>
+
+        <div class="config-section">
+            <h3 style="margin-bottom: 20px;">Paraphrasing Configuration</h3>
+            
+            <div class="config-group">
+                <label for="tone">Tone</label>
+                <select id="tone">
+                    <option value="neutral">Neutral</option>
+                    <option value="formal">Formal</option>
+                    <option value="casual">Casual</option>
+                </select>
+            </div>
+
+            <div class="config-group">
+                <label for="formality">Formality Level</label>
+                <select id="formality">
+                    <option value="medium">Medium</option>
+                    <option value="high">High</option>
+                    <option value="low">Low</option>
+                </select>
+            </div>
+
+            <div class="config-group">
+                <label for="creativity">Creativity</label>
+                <select id="creativity">
+                    <option value="moderate">Moderate</option>
+                    <option value="conservative">Conservative</option>
+                    <option value="creative">Creative</option>
+                </select>
+            </div>
+
+            <button id="paraphraseBtn" disabled>Start Paraphrasing</button>
+        </div>
+
+        <div class="progress-section" id="progressSection">
+            <div class="progress-bar">
+                <div class="progress-fill" id="progressFill">0%</div>
+            </div>
+            <p class="status-text" id="statusText">Processing...</p>
+        </div>
+
+        <div class="download-section" id="downloadSection">
+            <h3 style="color: #2e7d32; margin-bottom: 15px;">✅ Paraphrasing Complete!</h3>
+            <button id="downloadBtn">Download Paraphrased Document</button>
+        </div>
+
+        <div id="errorMsg" class="error" style="display: none;"></div>
+    </div>
+
+    <script>
+        let uploadedFile = null;
+        let documentData = null;
+        let currentJobId = null;
+
+        const uploadArea = document.getElementById('uploadArea');
+        const fileInput = document.getElementById('fileInput');
+        const fileInfo = document.getElementById('fileInfo');
+        const paraphraseBtn = document.getElementById('paraphraseBtn');
+        const progressSection = document.getElementById('progressSection');
+        const progressFill = document.getElementById('progressFill');
+        const statusText = document.getElementById('statusText');
+        const downloadSection = document.getElementById('downloadSection');
+        const downloadBtn = document.getElementById('downloadBtn');
+        const errorMsg = document.getElementById('errorMsg');
+
+        // Upload area interactions
+        uploadArea.addEventListener('click', () => fileInput.click());
+        
+        uploadArea.addEventListener('dragover', (e) => {
+            e.preventDefault();
+            uploadArea.classList.add('dragging');
+        });
+
+        uploadArea.addEventListener('dragleave', () => {
+            uploadArea.classList.remove('dragging');
+        });
+
+        uploadArea.addEventListener('drop', (e) => {
+            e.preventDefault();
+            uploadArea.classList.remove('dragging');
+            const files = e.dataTransfer.files;
+            if (files.length > 0) {
+                handleFileSelect(files[0]);
+            }
+        });
+
+        fileInput.addEventListener('change', (e) => {
+            if (e.target.files.length > 0) {
+                handleFileSelect(e.target.files[0]);
+            }
+        });
+
+        async function handleFileSelect(file) {
+            uploadedFile = file;
+            showError('');
+            
+            fileInfo.style.display = 'block';
+            fileInfo.textContent = `✓ Selected: ${file.name} (${(file.size / 1024 / 1024).toFixed(2)} MB)`;
+            
+            // Upload file
+            const formData = new FormData();
+            formData.append('document', file);
+            
+            try {
+                const response = await fetch('/api/upload', {
+                    method: 'POST',
+                    body: formData
+                });
+                
+                if (!response.ok) throw new Error('Upload failed');
+                
+                documentData = await response.json();
+                paraphraseBtn.disabled = false;
+                fileInfo.textContent += ' - Ready to paraphrase!';
+            } catch (error) {
+                showError('Failed to upload file: ' + error.message);
+                paraphraseBtn.disabled = true;
+            }
+        }
+
+        paraphraseBtn.addEventListener('click', async () => {
+            if (!documentData) return;
+            
+            paraphraseBtn.disabled = true;
+            progressSection.style.display = 'block';
+            downloadSection.style.display = 'none';
+            showError('');
+            
+            const config = {
+                tone: document.getElementById('tone').value,
+                formality: document.getElementById('formality').value,
+                creativity: document.getElementById('creativity').value,
+                preserveFormatting: true
+            };
+            
+            try {
+                const response = await fetch('/api/paraphrase', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        documentId: documentData.documentId,
+                        filePath: documentData.filePath,
+                        fileType: documentData.fileType,
+                        config
+                    })
+                });
+                
+                if (!response.ok) throw new Error('Failed to start paraphrasing');
+                
+                const result = await response.json();
+                currentJobId = result.jobId;
+                
+                // Start polling for progress
+                pollProgress();
+            } catch (error) {
+                showError('Failed to start paraphrasing: ' + error.message);
+                paraphraseBtn.disabled = false;
+                progressSection.style.display = 'none';
+            }
+        });
+
+        async function pollProgress() {
+            try {
+                const response = await fetch(`/api/job/${currentJobId}`);
+                if (!response.ok) throw new Error('Failed to get job status');
+                
+                const status = await response.json();
+                
+                progressFill.style.width = status.progress + '%';
+                progressFill.textContent = status.progress + '%';
+                statusText.textContent = `Status: ${status.status} - ${status.progress}%`;
+                
+                if (status.status === 'completed') {
+                    downloadSection.style.display = 'block';
+                    statusText.textContent = 'Processing complete!';
+                    setupDownload();
+                } else if (status.status === 'failed') {
+                    showError('Processing failed: ' + (status.error || 'Unknown error'));
+                    progressSection.style.display = 'none';
+                    paraphraseBtn.disabled = false;
+                } else {
+                    // Continue polling
+                    setTimeout(pollProgress, 2000);
+                }
+            } catch (error) {
+                showError('Failed to check job status: ' + error.message);
+            }
+        }
+
+        function setupDownload() {
+            downloadBtn.onclick = () => {
+                window.location.href = `/api/download/${documentData.documentId}?fileType=${documentData.fileType}`;
+            };
+        }
+
+        function showError(message) {
+            if (message) {
+                errorMsg.textContent = message;
+                errorMsg.style.display = 'block';
+            } else {
+                errorMsg.style.display = 'none';
+            }
+        }
+    </script>
+</body>
+</html>

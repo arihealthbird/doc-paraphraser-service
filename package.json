@@ -1,0 +1,35 @@
+{
+  "name": "doc-paraphraser-service",
+  "version": "1.0.0",
+  "description": "Document paraphrasing service using OpenRouter API for processing large documents (700+ pages)",
+  "main": "dist/index.js",
+  "scripts": {
+    "dev": "nodemon --exec ts-node src/index.ts",
+    "build": "tsc",
+    "start": "node dist/index.js",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": ["paraphrasing", "openrouter", "document-processing", "ai"],
+  "author": "",
+  "license": "ISC",
+  "type": "commonjs"
+  "dependencies": {
+    "@types/cors": "^2.8.19",
+    "@types/express": "^5.0.5",
+    "@types/multer": "^2.0.0",
+    "@types/node": "^24.9.2",
+    "bullmq": "^5.62.0",
+    "cors": "^2.8.5",
+    "dotenv": "^17.2.3",
+    "express": "^5.1.0",
+    "ioredis": "^5.8.2",
+    "mammoth": "^1.11.0",
+    "multer": "^2.0.2",
+    "nodemon": "^3.1.10",
+    "openai": "^6.7.0",
+    "pdf-parse": "^2.4.5",
+    "ts-node": "^10.9.2",
+    "typescript": "^5.9.3",
+    "uuid": "^13.0.0"
+  }
+}
